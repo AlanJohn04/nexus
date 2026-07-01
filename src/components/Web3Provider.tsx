@@ -88,13 +88,13 @@ export default function Web3Provider({ children }: { children: React.ReactNode }
       const _signer = await _provider.getSigner();
       const _address = await _signer.getAddress();
       
-      // Ensure we're on local Hardhat network (chainId 31337)
+      // Ensure we're on local Hardhat network (chainId 1337)
       const network = await _provider.getNetwork();
-      if (network.chainId !== 31337n) {
+      if (network.chainId !== 1337n) {
         try {
           await window.ethereum.request({
             method: 'wallet_switchEthereumChain',
-            params: [{ chainId: '0x7a69' }], // 31337 in hex
+            params: [{ chainId: '0x539' }], // 1337 in hex
           });
         } catch (switchError: any) {
           // This error code indicates that the chain has not been added to MetaMask.
@@ -103,7 +103,7 @@ export default function Web3Provider({ children }: { children: React.ReactNode }
               method: 'wallet_addEthereumChain',
               params: [
                 {
-                  chainId: '0x7a69',
+                  chainId: '0x539',
                   chainName: 'Hardhat Local',
                   rpcUrls: ['http://127.0.0.1:8545/'],
                   nativeCurrency: {

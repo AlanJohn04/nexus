@@ -32,15 +32,14 @@ export default function ComposePage() {
   const [txHash, setTxHash] = useState('');
 
   // SAGE analysis trigger
-  const runSageAnalysis = () => {
+  const runSageAnalysis = async () => {
     if (!description) return;
     setIsAnalyzingSage(true);
     setStep(2);
-    setTimeout(() => {
-      const result = analyzeIntention(description, category, deadlineDays);
-      setSageResult(result);
-      setIsAnalyzingSage(false);
-    }, 2000);
+    
+    const result = await analyzeIntention(description, category, deadlineDays);
+    setSageResult(result);
+    setIsAnalyzingSage(false);
   };
 
   // Twin analysis trigger
