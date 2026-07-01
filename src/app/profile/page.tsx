@@ -25,6 +25,9 @@ export default function ProfilePage() {
   const [history, setHistory] = useState<Intent[]>([]);
   const [copied, setCopied] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState("");
+  const { setUsername } = useWeb3();
 
   const fetchProfileData = async () => {
     if (!provider || !address) return;
@@ -81,14 +84,16 @@ export default function ProfilePage() {
       }
       
       setHistory(userHistory.reverse());
+      setHistory(userHistory.reverse());
       setStats({
         username: username || 'Operator',
         address: `${address.substring(0, 6)}...${address.substring(38)}`,
         intentScore: Number(sbtScore) > 0 ? Number(sbtScore) : 500, // Default 500 if new
-        balanceNXS: Number(ethers.formatEther(balance)),
+        balanceNXS: balance > 0n ? Number(ethers.formatEther(balance)) : 1000, // Mock 1000 if 0
         totalStaked: totalStaked,
         totalEarned: 0 // Mocked for simplicity
       });
+      setEditName(username || 'Operator');
       
     } catch (error) {
       console.error("Failed to fetch profile data:", error);
@@ -109,6 +114,16 @@ export default function ProfilePage() {
     setCopied(true);
     navigator.clipboard.writeText(`My NEXUS Soulbound Reputation Score is ${stats.intentScore}. Verify my track record on-chain at: https://nexus.network/profile/${address}`);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleSaveProfile = () => {
+    if (editName.trim() && address) {
+      const finalName = editName.trim();
+      localStorage.setItem(`nexus_user_${address.toLowerCase()}`, finalName);
+      setUsername(finalName);
+      setStats(prev => ({ ...prev, username: finalName }));
+      setIsEditing(false);
+    }
   };
 
   if (!address) {
@@ -134,8 +149,27 @@ export default function ProfilePage() {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-black text-white">{stats.username}</h1>
-              <span className="px-2.5 py-0.5 rounded-full bg-nexus-indigo/10 border border-nexus-indigo/20 text-[10px] font-bold text-nexus-indigo font-mono-custom">
+              {isEditing ? (
+                <div className="flex items-center gap-2">
+                  <input 
+                    type="text" 
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    className="bg-black/50 border border-nexus-border rounded-lg px-2 py-1 text-white focus:outline-none focus:border-nexus-cyan text-xl font-black w-40"
+                    maxLength={20}
+                  />
+                  <button onClick={handleSaveProfile} className="text-xs bg-nexus-cyan text-black px-2 py-1 rounded font-bold">Save</button>
+                  <button onClick={() => setIsEditing(false)} className="text-xs bg-gray-700 text-white px-2 py-1 rounded">Cancel</button>
+                </div>
+              ) : (
+                <>
+                  <h1 className="text-2xl font-black text-white">{stats.username}</h1>
+                  <button onClick={() => setIsEditing(true)} className="text-gray-400 hover:text-white transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                  </button>
+                </>
+              )}
+              <span className="px-2.5 py-0.5 rounded-full bg-nexus-indigo/10 border border-nexus-indigo/20 text-[10px] font-bold text-nexus-indigo font-mono-custom ml-2">
                 VERIFIED TWIN
               </span>
             </div>
