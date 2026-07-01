@@ -1,26 +1,122 @@
 @import "tailwindcss";
 
+@theme {
+  --color-nexus-void: #020208;
+  --color-nexus-deep: #070714;
+  --color-nexus-panel: #0d0d22;
+  --color-nexus-border: rgba(255, 255, 255, 0.06);
+  --color-nexus-border-active: rgba(99, 102, 241, 0.4);
+  
+  --color-nexus-indigo: #6366f1;
+  --color-nexus-violet: #a855f7;
+  --color-nexus-cyan: #22d3ee;
+  --color-nexus-emerald: #10b981;
+  --color-nexus-gold: #f59e0b;
+  --color-nexus-crimson: #ef4444;
+  --color-nexus-rose: #f43f5e;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: var(--color-nexus-void);
+  --foreground: #f8f9fa;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* Custom Utilities & Effects */
+.glass-panel {
+  background: rgba(13, 13, 34, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--color-nexus-border);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+}
+
+.glass-panel-interactive {
+  background: rgba(13, 13, 34, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--color-nexus-border);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-panel-interactive:hover {
+  border-color: var(--color-nexus-border-active);
+  box-shadow: 0 12px 40px 0 rgba(99, 102, 241, 0.15);
+  transform: translateY(-2px);
+}
+
+.text-gradient-primary {
+  background: linear-gradient(135deg, var(--color-nexus-cyan), var(--color-nexus-indigo), var(--color-nexus-violet));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-rose {
+  background: linear-gradient(135deg, var(--color-nexus-rose), var(--color-nexus-violet));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.bg-gradient-primary {
+  background: linear-gradient(135deg, var(--color-nexus-indigo), var(--color-nexus-violet));
+}
+
+.bg-gradient-cyan {
+  background: linear-gradient(135deg, var(--color-nexus-cyan), var(--color-nexus-indigo));
+}
+
+/* Glowing animations */
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+.glow-orb-purple {
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, rgba(0,0,0,0) 70%);
+  animation: pulse-glow 8s infinite ease-in-out;
+}
+
+.glow-orb-cyan {
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.12) 0%, rgba(0,0,0,0) 70%);
+  animation: pulse-glow 10s infinite ease-in-out 2s;
+}
+
+.glow-orb-rose {
+  background: radial-gradient(circle, rgba(244, 63, 94, 0.12) 0%, rgba(0,0,0,0) 70%);
+  animation: pulse-glow 12s infinite ease-in-out 4s;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-nexus-void);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.3);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.6);
+}
+
+/* Monospace fonts for hashes/stats */
+.font-mono-custom {
+  font-family: var(--font-geist-mono), Courier, monospace;
 }
