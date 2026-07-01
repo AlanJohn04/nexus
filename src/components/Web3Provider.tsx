@@ -32,6 +32,8 @@ export default function Web3Provider({ children }: { children: React.ReactNode }
   const [address, setAddress] = useState<string | null>(null);
   const [username, setUsername] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [showSignup, setShowSignup] = useState(false);
+  const [tempUsername, setTempUsername] = useState("");
   const router = useRouter();
   const pathname = usePathname();
 
@@ -40,15 +42,15 @@ export default function Web3Provider({ children }: { children: React.ReactNode }
       const storedName = localStorage.getItem(`nexus_user_${address.toLowerCase()}`);
       if (storedName) {
         setUsername(storedName);
-      } else {
-        const defaultName = `User_${address.substring(2, 6).toUpperCase()}`;
-        localStorage.setItem(`nexus_user_${address.toLowerCase()}`, defaultName);
-        setUsername(defaultName);
+      } else if (!username) {
+        // Show signup modal
+        setShowSignup(true);
       }
     } else {
       setUsername(null);
+      setShowSignup(false);
     }
-  }, [address]);
+  }, [address, username]);
 
   useEffect(() => {
     // Check if wallet was previously connected (basic check)
@@ -130,9 +132,67 @@ export default function Web3Provider({ children }: { children: React.ReactNode }
     }
   };
 
+  const handleSignup = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!tempUsername.trim() || !address) return;
+    
+    const finalName = tempUsername.trim();
+    localStorage.setItem(`nexus_user_${address.toLowerCase()}`, finalName);
+    setUsername(finalName);
+    setShowSignup(false);
+    router.push('/profile');
+  };
+
   return (
     <Web3Context.Provider value={{ provider, signer, address, username, connectWallet, isConnecting, setUsername }}>
       {children}
+      
+      {showSignup && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-nexus-void border border-nexus-border rounded-3xl p-8 max-w-md w-full shadow-[0_0_40px_rgba(34,211,238,0.15)] relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-nexus-indigo via-nexus-cyan to-nexus-emerald" />
+            
+            <h2 className="text-2xl font-black text-white mb-2 text-center">Claim Your Identity</h2>
+            <p className="text-sm text-gray-400 text-center mb-8">
+              Link a unique username to your connected Web3 wallet.
+            </p>
+            
+            <form onSubmit={handleSignup} className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                  Connected Wallet
+                </label>
+                <div className="bg-black/50 border border-nexus-border rounded-xl p-3 text-xs text-gray-500 font-mono-custom break-all">
+                  {address}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                  Choose Username
+                </label>
+                <input
+                  type="text"
+                  required
+                  maxLength={20}
+                  placeholder="e.g. Satoshi_21"
+                  value={tempUsername}
+                  onChange={(e) => setTempUsername(e.target.value)}
+                  className="w-full bg-black/50 border border-nexus-border rounded-xl p-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-nexus-cyan transition-colors"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={!tempUsername.trim()}
+                className="w-full py-3 rounded-xl bg-gradient-cyan text-nexus-void font-bold flex items-center justify-center gap-2 transition-all hover:opacity-90 disabled:opacity-50"
+              >
+                Create Profile
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </Web3Context.Provider>
   );
 }
