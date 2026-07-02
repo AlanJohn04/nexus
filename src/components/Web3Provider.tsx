@@ -4,6 +4,12 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { ethers } from "ethers";
 import { useRouter, usePathname } from 'next/navigation';
 
+declare global {
+  interface Window {
+    ethereum?: any;
+  }
+}
+
 interface Web3ContextType {
   provider: ethers.BrowserProvider | null;
   signer: ethers.JsonRpcSigner | null;

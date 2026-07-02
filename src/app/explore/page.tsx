@@ -44,6 +44,9 @@ export default function ExplorePage() {
         if (!intentData.resolved) {
           fetchedIntents.push({
             id: i.toString(),
+            creatorAddress: intentData.creator,
+            createdAt: new Date().toISOString(),
+            completed: intentData.completed || false,
             creatorName: `${intentData.creator.substring(0,6)}...${intentData.creator.substring(38)}`,
             description: intentData.description,
             category: intentData.category,

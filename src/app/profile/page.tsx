@@ -63,6 +63,8 @@ export default function ProfilePage() {
             if (intentData.resolved) {
               userHistory.push({
                 id: i.toString(),
+                creatorAddress: intentData.creator,
+                createdAt: new Date().toISOString(),
                 creatorName: "You",
                 description: intentData.description,
                 category: intentData.category,

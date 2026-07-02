@@ -12,6 +12,7 @@ export interface Intent {
   completed: boolean;
   resolved: boolean;
   createdAt: string;
+  status?: 'active' | 'completed' | 'failed';
   txHash?: string;
   hasProof?: boolean;
   proofLink?: string;
