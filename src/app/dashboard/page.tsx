@@ -14,7 +14,7 @@ import { ethers } from 'ethers';
 import { CONTRACT_ADDRESSES, CONTRACT_ABIS } from '@/lib/contracts';
 
 export default function DashboardPage() {
-  const { provider, signer, address } = useWeb3();
+  const { address } = useWeb3();
   const [intents, setIntents] = useState<Intent[]>([]);
   
   const [stats, setStats] = useState({

@@ -13,7 +13,7 @@ import { ethers } from 'ethers';
 import { CONTRACT_ADDRESSES, CONTRACT_ABIS } from '@/lib/contracts';
 
 export default function ProfilePage() {
-  const { provider, address, username } = useWeb3();
+  const { address, username } = useWeb3();
   const [stats, setStats] = useState({
     username: 'Operator',
     address: 'Not Connected',

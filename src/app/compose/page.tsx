@@ -17,7 +17,7 @@ const SOROBAN_CONTRACT_ID = "CANB4HBVEPY3N4T5JZ2WTPHADAB3GGVIXMF6H7SGU3ZSEL2WITI
 
 export default function ComposePage() {
   const router = useRouter();
-  const { provider, signer, address, connectWallet } = useWeb3();
+  const { address, connectWallet } = useWeb3();
   const [step, setStep] = useState(1);
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<IntentCategory>('career');

@@ -12,7 +12,7 @@ import { ethers } from 'ethers';
 import { CONTRACT_ADDRESSES, CONTRACT_ABIS } from '@/lib/contracts';
 
 export default function ExplorePage() {
-  const { provider, signer, address, connectWallet } = useWeb3();
+  const { address, connectWallet } = useWeb3();
   const [activeTab, setActiveTab] = useState<'trending' | 'new' | 'closing'>('trending');
   const [filter, setFilter] = useState<IntentCategory | 'all'>('all');
   
