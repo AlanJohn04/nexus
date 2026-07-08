@@ -1,18 +1,15 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { ethers } from "ethers";
+import {
+  isConnected,
+  requestAccess,
+  getPublicKey,
+  setAllowed,
+} from "@stellar/freighter-api";
 import { useRouter, usePathname } from 'next/navigation';
 
-declare global {
-  interface Window {
-    ethereum?: any;
-  }
-}
-
 interface Web3ContextType {
-  provider: ethers.BrowserProvider | null;
-  signer: ethers.JsonRpcSigner | null;
   address: string | null;
   username: string | null;
   connectWallet: (isExplicit?: boolean) => Promise<void>;
@@ -21,8 +18,6 @@ interface Web3ContextType {
 }
 
 const Web3Context = createContext<Web3ContextType>({
-  provider: null,
-  signer: null,
   address: null,
   username: null,
   connectWallet: async () => {},
@@ -33,8 +28,6 @@ const Web3Context = createContext<Web3ContextType>({
 export const useWeb3 = () => useContext(Web3Context);
 
 export default function Web3Provider({ children }: { children: React.ReactNode }) {
-  const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null);
-  const [signer, setSigner] = useState<ethers.JsonRpcSigner | null>(null);
   const [address, setAddress] = useState<string | null>(null);
   const [username, setUsername] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
@@ -49,7 +42,6 @@ export default function Web3Provider({ children }: { children: React.ReactNode }
       if (storedName) {
         setUsername(storedName);
       } else if (!username) {
-        // Show signup modal
         setShowSignup(true);
       }
     } else {
@@ -59,80 +51,47 @@ export default function Web3Provider({ children }: { children: React.ReactNode }
   }, [address, username]);
 
   useEffect(() => {
-    // Check if wallet was previously connected (basic check)
-    if (typeof window !== "undefined" && window.ethereum) {
-      window.ethereum.request({ method: "eth_accounts" }).then((accounts: string[]) => {
-        if (accounts.length > 0) {
-          connectWallet();
+    const checkConnection = async () => {
+      try {
+        const connected = await isConnected();
+        if (connected) {
+          const pubKey = await getPublicKey();
+          if (pubKey) {
+            setAddress(pubKey);
+          }
         }
-      });
-      
-      window.ethereum.on('accountsChanged', (accounts: string[]) => {
-        if (accounts.length > 0) {
-          connectWallet();
-        } else {
-          setAddress(null);
-          setSigner(null);
-        }
-      });
-    }
+      } catch (e) {
+        console.error("Freighter check error", e);
+      }
+    };
+    checkConnection();
   }, []);
 
   const connectWallet = async (isExplicit = false) => {
-    if (typeof window === "undefined" || !window.ethereum) {
-      alert("Please install MetaMask to use NEXUS!");
-      return;
-    }
-
     try {
       setIsConnecting(true);
-      const _provider = new ethers.BrowserProvider(window.ethereum);
       
-      // Request account access
-      await _provider.send("eth_requestAccounts", []);
-      
-      const _signer = await _provider.getSigner();
-      const _address = await _signer.getAddress();
-      
-      // Ensure we're on local Hardhat network (chainId 1337)
-      const network = await _provider.getNetwork();
-      if (network.chainId !== 1337n) {
-        try {
-          await window.ethereum.request({
-            method: 'wallet_switchEthereumChain',
-            params: [{ chainId: '0x539' }], // 1337 in hex
-          });
-        } catch (switchError: any) {
-          // This error code indicates that the chain has not been added to MetaMask.
-          if (switchError.code === 4902) {
-            await window.ethereum.request({
-              method: 'wallet_addEthereumChain',
-              params: [
-                {
-                  chainId: '0x539',
-                  chainName: 'Hardhat Local',
-                  rpcUrls: ['http://127.0.0.1:8545/'],
-                  nativeCurrency: {
-                    name: 'ETH',
-                    symbol: 'ETH',
-                    decimals: 18
-                  },
-                },
-              ],
-            });
-          }
-        }
+      const hasFreighter = await isConnected();
+      if (!hasFreighter) {
+        alert("Please install Freighter wallet to use NEXUS on Stellar!");
+        setIsConnecting(false);
+        return;
       }
 
-      setProvider(_provider);
-      setSigner(_signer);
-      setAddress(_address);
-
-      if (isExplicit) {
-        router.push('/profile');
+      await setAllowed();
+      const access = await requestAccess();
+      if (access) {
+        const pubKey = await getPublicKey();
+        setAddress(pubKey);
+        
+        if (isExplicit) {
+          router.push('/profile');
+        }
+      } else {
+        console.error("User denied access to Freighter.");
       }
     } catch (error: any) {
-      console.error("Error connecting to wallet:", error.message || error);
+      console.error("Error connecting to Freighter:", error.message || error);
     } finally {
       setIsConnecting(false);
     }
@@ -150,7 +109,7 @@ export default function Web3Provider({ children }: { children: React.ReactNode }
   };
 
   return (
-    <Web3Context.Provider value={{ provider, signer, address, username, connectWallet, isConnecting, setUsername }}>
+    <Web3Context.Provider value={{ address, username, connectWallet, isConnecting, setUsername }}>
       {children}
       
       {showSignup && (
@@ -160,7 +119,7 @@ export default function Web3Provider({ children }: { children: React.ReactNode }
             
             <h2 className="text-2xl font-black text-white mb-2 text-center">Claim Your Identity</h2>
             <p className="text-sm text-gray-400 text-center mb-8">
-              Link a unique username to your connected Web3 wallet.
+              Link a unique username to your connected Freighter wallet.
             </p>
             
             <form onSubmit={handleSignup} className="space-y-6">
