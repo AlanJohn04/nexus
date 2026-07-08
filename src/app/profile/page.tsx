@@ -30,70 +30,19 @@ export default function ProfilePage() {
   const { setUsername } = useWeb3();
 
   const fetchProfileData = async () => {
-    if (!provider || !address) return;
+    if (!address) return;
     try {
       setIsLoading(true);
-      const intentContract = new ethers.Contract(CONTRACT_ADDRESSES.intentChain, CONTRACT_ABIS.intentChain, provider);
-      const sbtContract = new ethers.Contract(CONTRACT_ADDRESSES.reputationScore, CONTRACT_ABIS.reputationScore, provider);
-      const tokenContract = new ethers.Contract(CONTRACT_ADDRESSES.nexusToken, CONTRACT_ABIS.nexusToken, provider);
       
-      let count = 0n;
-      let sbtScore = 500n;
-      let balance = 0n;
-      
-      try {
-        count = await intentContract.intentCount();
-      } catch (e) { console.warn("Failed to fetch intentCount:", e); }
-      
-      try {
-        sbtScore = await sbtContract.getScore(address);
-      } catch (e) { console.warn("Failed to fetch score:", e); }
-      
-      try {
-        balance = await tokenContract.balanceOf(address);
-      } catch (e) { console.warn("Failed to fetch balance:", e); }
-      
-      const userHistory: Intent[] = [];
-      let totalStaked = 0;
-      
-      for (let i = 1; i <= Number(count); i++) {
-        try {
-          const intentData = await intentContract.intents(i);
-          if (intentData.creator.toLowerCase() === address.toLowerCase()) {
-            if (intentData.resolved) {
-              userHistory.push({
-                id: i.toString(),
-                creatorAddress: intentData.creator,
-                createdAt: new Date().toISOString(),
-                creatorName: "You",
-                description: intentData.description,
-                category: intentData.category,
-                stakeAmount: Number(ethers.formatEther(intentData.stakeAmount)),
-                sageScore: Number(intentData.sageScore),
-                deadline: new Date(Number(intentData.deadline) * 1000).toISOString(),
-                status: intentData.completed ? 'completed' : 'failed',
-                resolved: true,
-                completed: intentData.completed,
-                yesStakes: Number(ethers.formatEther(intentData.totalYesStakes)),
-                noStakes: Number(ethers.formatEther(intentData.totalNoStakes)),
-                votesCount: 0,
-              });
-            } else {
-               totalStaked += Number(ethers.formatEther(intentData.stakeAmount));
-            }
-          }
-        } catch (e) { console.warn("Failed to fetch intent", i, e); }
-      }
-      
-      setHistory(userHistory.reverse());
-      setHistory(userHistory.reverse());
+      // MOCK DATA FOR SOROBAN MIGRATION
+      setHistory([]);
       setStats({
         username: username || 'Operator',
         address: `${address.substring(0, 6)}...${address.substring(38)}`,
-        intentScore: Number(sbtScore) > 0 ? Number(sbtScore) : 500, // Default 500 if new
-        balanceNXS: balance > 0n ? Number(ethers.formatEther(balance)) : 1000, // Mock 1000 if 0
-        totalStaked: totalStaked,
-        totalEarned: 0 // Mocked for simplicity
+        intentScore: 500,
+        balanceNXS: 1000,
+        totalStaked: 0,
+        totalEarned: 0
       });
       setEditName(username || 'Operator');
       
@@ -105,12 +54,12 @@ export default function ProfilePage() {
   };
 
   useEffect(() => {
-    if (provider && address) {
+    if (address) {
       fetchProfileData();
     } else {
       setIsLoading(false);
     }
-  }, [provider, address]);
+  }, [address]);
 
   const handleShare = () => {
     setCopied(true);

@@ -26,44 +26,10 @@ export default function ExplorePage() {
   const [stakeSide, setStakeSide] = useState<'yes'|'no'>('yes');
 
   const fetchIntents = async () => {
-    if (!provider) {
-      setIsLoading(false);
-      return;
-    }
-    
     try {
       setIsLoading(true);
-      const intentContract = new ethers.Contract(CONTRACT_ADDRESSES.intentChain, CONTRACT_ABIS.intentChain, provider);
-      const count = await intentContract.intentCount();
-      
-      const fetchedIntents: Intent[] = [];
-      for (let i = 1; i <= count; i++) {
-        const intentData = await intentContract.intents(i);
-        
-        // Only show unresolved intents on Explore
-        if (!intentData.resolved) {
-          fetchedIntents.push({
-            id: i.toString(),
-            creatorAddress: intentData.creator,
-            createdAt: new Date().toISOString(),
-            completed: intentData.completed || false,
-            creatorName: `${intentData.creator.substring(0,6)}...${intentData.creator.substring(38)}`,
-            description: intentData.description,
-            category: intentData.category,
-            stakeAmount: Number(ethers.formatEther(intentData.stakeAmount)),
-            sageScore: Number(intentData.sageScore),
-            deadline: new Date(Number(intentData.deadline) * 1000).toISOString(),
-            status: 'active',
-            resolved: false,
-            yesStakes: Number(ethers.formatEther(intentData.totalYesStakes)),
-            noStakes: Number(ethers.formatEther(intentData.totalNoStakes)),
-            votesCount: 0, // Mock for now, requires contract event indexing to get actual count
-            hasProof: intentData.hasProof,
-            proofLink: intentData.proofLink
-          });
-        }
-      }
-      setIntents(fetchedIntents.reverse());
+      // MOCK DATA FOR SOROBAN
+      setIntents([]);
     } catch (error) {
       console.error("Error fetching intents:", error);
     } finally {
@@ -73,12 +39,12 @@ export default function ExplorePage() {
 
   useEffect(() => {
     fetchIntents();
-  }, [provider]);
+  }, []);
 
   const filteredIntents = intents.filter(i => filter === 'all' || i.category === filter);
 
   const handleStake = async () => {
-    if (!signer || !selectedIntent) {
+    if (!address || !selectedIntent) {
       alert("Please connect your wallet first!");
       await connectWallet();
       return;
@@ -87,18 +53,8 @@ export default function ExplorePage() {
     setIsStaking(true);
     
     try {
-      const intentContract = new ethers.Contract(CONTRACT_ADDRESSES.intentChain, CONTRACT_ABIS.intentChain, signer);
-      const tokenContract = new ethers.Contract(CONTRACT_ADDRESSES.nexusToken, CONTRACT_ABIS.nexusToken, signer);
-      
-      const amountWei = ethers.parseEther(stakeAmount.toString());
-
-      // 1. Approve Token
-      const approveTx = await tokenContract.approve(CONTRACT_ADDRESSES.intentChain, amountWei);
-      await approveTx.wait();
-      
-      // 2. Stake
-      const stakeTx = await intentContract.stakeOnIntent(selectedIntent, stakeSide === 'yes', amountWei);
-      await stakeTx.wait();
+      // Soroban Stub
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
       alert(`Successfully staked ${stakeAmount} $NXS on ${stakeSide.toUpperCase()}!`);
       setSelectedIntent(null);

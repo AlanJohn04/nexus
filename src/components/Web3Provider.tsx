@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import {
   isConnected,
   requestAccess,
+  // @ts-ignore
   getPublicKey,
   setAllowed,
 } from "@stellar/freighter-api";

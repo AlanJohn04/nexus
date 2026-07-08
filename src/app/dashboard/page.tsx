@@ -38,58 +38,17 @@ export default function DashboardPage() {
   const [proofLinkInput, setProofLinkInput] = useState('');
 
   const fetchUserData = async () => {
-    if (!provider || !address) return;
+    if (!address) return;
     try {
       setIsLoading(true);
-      const intentContract = new ethers.Contract(CONTRACT_ADDRESSES.intentChain, CONTRACT_ABIS.intentChain, provider);
-      const sbtContract = new ethers.Contract(CONTRACT_ADDRESSES.reputationScore, CONTRACT_ABIS.reputationScore, provider);
       
-      const count = await intentContract.intentCount();
-      const sbtScore = await sbtContract.getScore(address);
-      
-      let completed = 0;
-      let failed = 0;
-      const userIntents: Intent[] = [];
-      
-      for (let i = 1; i <= count; i++) {
-        const intentData = await intentContract.intents(i);
-        if (intentData.creator.toLowerCase() === address.toLowerCase()) {
-          const isResolved = intentData.resolved;
-          const isCompleted = intentData.completed;
-          
-          if (isResolved) {
-            if (isCompleted) completed++;
-            else failed++;
-          }
-          
-          userIntents.push({
-            id: i.toString(),
-            creatorAddress: intentData.creator,
-            createdAt: new Date().toISOString(),
-            creatorName: "You",
-            description: intentData.description,
-            category: intentData.category,
-            stakeAmount: Number(ethers.formatEther(intentData.stakeAmount)),
-            sageScore: Number(intentData.sageScore),
-            deadline: new Date(Number(intentData.deadline) * 1000).toISOString(),
-            status: isResolved ? (isCompleted ? 'completed' : 'failed') : 'active',
-            resolved: isResolved,
-            completed: isCompleted,
-            yesStakes: Number(ethers.formatEther(intentData.totalYesStakes)),
-            noStakes: Number(ethers.formatEther(intentData.totalNoStakes)),
-            votesCount: 0,
-            hasProof: intentData.hasProof,
-            proofLink: intentData.proofLink
-          });
-        }
-      }
-      
-      setIntents(userIntents.reverse());
+      // MOCK DATA FOR SOROBAN MIGRATION
+      setIntents([]);
       setStats({
-        completedIntents: completed,
-        failedIntents: failed,
-        intentScore: Number(sbtScore) > 0 ? Number(sbtScore) : 500, // Default 500 if new
-        totalEarned: 0 // Simplification for now
+        completedIntents: 0,
+        failedIntents: 0,
+        intentScore: 500,
+        totalEarned: 0
       });
       
     } catch (error) {
@@ -100,22 +59,21 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
-    if (provider && address) {
+    if (address) {
       fetchUserData();
     } else {
       setIsLoading(false);
     }
-  }, [provider, address]);
+  }, [address]);
 
   // Submit Proof to chain
   const handleSubmitProof = async (intentId: string) => {
-    if (!signer || !proofLinkInput) return;
+    if (!proofLinkInput) return;
     try {
       setSubmittingProofId(intentId);
-      const intentContract = new ethers.Contract(CONTRACT_ADDRESSES.intentChain, CONTRACT_ABIS.intentChain, signer);
       
-      const tx = await intentContract.submitProof(intentId, proofLinkInput);
-      await tx.wait();
+      // Soroban Stub
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
       alert("Proof submitted successfully!");
       setProofLinkInput('');
@@ -130,22 +88,19 @@ export default function DashboardPage() {
 
   // Execute Voting Resolution on chain
   const handleResolveIntent = async (intent: Intent) => {
-    if (!signer) return;
     setResolvingId(intent.id);
     setResolutionStep(1); // "Verifying on-chain..."
     setPayoutDetails(null);
 
     try {
-      const intentContract = new ethers.Contract(CONTRACT_ADDRESSES.intentChain, CONTRACT_ABIS.intentChain, signer);
-      
-      const tx = await intentContract.resolveIntent(intent.id);
+      // Soroban Stub
+      await new Promise(resolve => setTimeout(resolve, 2000));
       setResolutionStep(2); // "Waiting for block..."
       
-      await tx.wait();
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       // Refetch to see result
-      const resolvedData = await intentContract.intents(intent.id);
-      const isCompleted = resolvedData.completed;
+      const isCompleted = true; // stub
       
       // Calculate display numbers
       let userReturned = 0;
