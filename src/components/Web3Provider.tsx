@@ -4,9 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import {
   isConnected,
   requestAccess,
-  // @ts-ignore
-  getPublicKey,
-  setAllowed,
+  getAddress,
 } from "@stellar/freighter-api";
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -54,11 +52,11 @@ export default function Web3Provider({ children }: { children: React.ReactNode }
   useEffect(() => {
     const checkConnection = async () => {
       try {
-        const connected = await isConnected();
-        if (connected) {
-          const pubKey = await getPublicKey();
-          if (pubKey) {
-            setAddress(pubKey);
+        const connectionInfo = await isConnected();
+        if (connectionInfo && connectionInfo.isConnected) {
+          const { address, error } = await getAddress();
+          if (address && !error) {
+            setAddress(address);
           }
         }
       } catch (e) {
@@ -72,24 +70,22 @@ export default function Web3Provider({ children }: { children: React.ReactNode }
     try {
       setIsConnecting(true);
       
-      const hasFreighter = await isConnected();
-      if (!hasFreighter) {
+      const connectionInfo = await isConnected();
+      if (!connectionInfo || !connectionInfo.isConnected) {
         alert("Please install Freighter wallet to use NEXUS on Stellar!");
         setIsConnecting(false);
         return;
       }
 
-      await setAllowed();
-      const access = await requestAccess();
-      if (access) {
-        const pubKey = await getPublicKey();
-        setAddress(pubKey);
+      const { address, error } = await requestAccess();
+      if (address && !error) {
+        setAddress(address);
         
         if (isExplicit) {
           router.push('/profile');
         }
       } else {
-        console.error("User denied access to Freighter.");
+        console.error("User denied access to Freighter.", error);
       }
     } catch (error: any) {
       console.error("Error connecting to Freighter:", error.message || error);
